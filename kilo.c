@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include <stdio.h>
+#include <errno.h>
 
 //defines
 
@@ -41,17 +42,34 @@ atexit(disableRawMode);
  tcsetattr(STDIN_FILENO,TCSAFLUSH, &raw);
 }
 
+
+
+char editorReadKey(){
+char c;
+int nread;
+  while((nread=read(STDIN_FILENO,&c,1))!=1){
+  printf("%d (%c)\r\n",c,c);
+  if(nread==-1 && errno!=EAGAIN) die("read");
+  }
+
+return c;
+}
+//inputs
+void editorProcessKeypress(){
+	char c = editorReadKey();
+	switch(c){
+	case CTRL_KEY('q'):
+	exit(0);
+	break;
+	}
+}
+
+
 int main(){
   enableRawMode();
 
   while(1){
-	char c='\0';
-	read(STDIN_FILENO,&c,1);
-	if(iscntrl(c))
-	   printf("%d\r\n",c);
-	else
-	 printf("%d (%c)\r\n",c,c);
-	if(c== CTRL_KEY('q')) break;
+	editorProcessKeypress();
 }
   return 0;
 }
