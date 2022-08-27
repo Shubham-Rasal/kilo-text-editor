@@ -9,6 +9,7 @@
 
 #define CTRL_KEY(k) ((k) & 0x1f)
 
+//original raw termios
 struct termios orig_termios;
 
 void die(const char*s){
@@ -23,7 +24,6 @@ void disableRawMode(){
 
 void enableRawMode(){
 
-//original raw termios;
 
  if (tcgetattr(STDIN_FILENO,&orig_termios)==-1) die("tcgetattr");
 atexit(disableRawMode);
@@ -43,7 +43,7 @@ atexit(disableRawMode);
 }
 
 
-
+//inputs
 char editorReadKey(){
 char c;
 int nread;
@@ -54,7 +54,17 @@ int nread;
 
 return c;
 }
-//inputs
+
+//outputs
+void editorRefreshScreen(){
+
+write(STDOUT_FILENO,"\x1b[2J",4);
+//cursor positon
+write(STDOUT_FILENO,"\x1b[H",3);
+
+}
+
+
 void editorProcessKeypress(){
 	char c = editorReadKey();
 	switch(c){
@@ -69,8 +79,9 @@ int main(){
   enableRawMode();
 
   while(1){
+ 	editorRefreshScreen();
 	editorProcessKeypress();
-}
+  }
   return 0;
 }
 
